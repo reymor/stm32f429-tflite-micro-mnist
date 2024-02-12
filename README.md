@@ -6,8 +6,7 @@ The following repository will provide anyone having a [STM32F429I-DISC1](https:/
 
 A model train with The [MNIST](http://yann.lecun.com/exdb/mnist/) database which could make the inference on the number drawn on the LCD. From 0 to 9.
 
-<video src="assets/example_running.mp4" controls="controls">
-</video>
+[model_running.webm](https://github.com/reymor/stm32f429-tflite-micro-mnist/assets/39070043/ee4e4d3d-7cc5-4812-ba92-d57546da7d25)
 
 ![static](assets/example.png)
 
