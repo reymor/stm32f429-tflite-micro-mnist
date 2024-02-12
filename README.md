@@ -6,11 +6,22 @@ The following repository will provide anyone having a [STM32F429I-DISC1](https:/
 
 A model train with The [MNIST](http://yann.lecun.com/exdb/mnist/) database which could make the inference on the number drawn on the LCD. From 0 to 9.
 
+[CMSIS-NN: Efficient Neural Network Kernels for Arm Cortex-M CPUs](https://arxiv.org/pdf/1801.06601.pdf) are a collection of efficient neural network kernels developed to maximize the performance and minimize the memory footprint of neural networks on Cortex-M processor cores.
+
+Here, it maximize the performance almost 10 times.
+
+| Model         | Time [ms] |
+| -----------   | ----------- |
+| 2020          | ~1956 |
+| 2020-CMSIS-NN | ~199 |
+
+![graph_cmp](assets/graph_cmp.png)
+
 ### Model now (2024) using CMSIS-NN
 
 [model_running_cmsis-nn.webm](https://github.com/reymor/stm32f429-tflite-micro-mnist/assets/39070043/871f1613-6553-4e92-9720-2d2fe8548f52)
 
-![static](assets/example.png)
+![static_cmsis-nn](assets/example_cmsis-nn.png)
 
 ### Model in 2020 without CMSIS-NN
 
