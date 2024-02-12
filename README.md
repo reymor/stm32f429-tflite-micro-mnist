@@ -6,6 +6,14 @@ The following repository will provide anyone having a [STM32F429I-DISC1](https:/
 
 A model train with The [MNIST](http://yann.lecun.com/exdb/mnist/) database which could make the inference on the number drawn on the LCD. From 0 to 9.
 
+### Model now (2024) using CMSIS-NN
+
+[model_running_cmsis-nn.webm](https://github.com/reymor/stm32f429-tflite-micro-mnist/assets/39070043/871f1613-6553-4e92-9720-2d2fe8548f52)
+
+![static](assets/example.png)
+
+### Model in 2020 without CMSIS-NN
+
 [model_running.webm](https://github.com/reymor/stm32f429-tflite-micro-mnist/assets/39070043/ee4e4d3d-7cc5-4812-ba92-d57546da7d25)
 
 ![static](assets/example.png)
