@@ -16,6 +16,8 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_CONCATENATION_H_
 #define TENSORFLOW_LITE_KERNELS_INTERNAL_REFERENCE_CONCATENATION_H_
 
+#include <algorithm>
+
 #include "tensorflow/lite/kernels/internal/common.h"
 #include "tensorflow/lite/kernels/internal/compatibility.h"
 #include "tensorflow/lite/kernels/internal/cppmath.h"
@@ -68,8 +70,7 @@ inline void Concatenation(const ConcatenationParams& params,
   }
 }
 
-// TODO(prabhumk): This is the same as the optimized implementation.
-// TODO(prabhumk): The quantized implementation of concatentation isn't fully
+// TODO(b/174275780): The quantized implementation of concatentation isn't fully
 // quantized as it takes scale as a floating point value. This should be fixed
 // when optimizng this routine further.
 inline void ConcatenationWithScaling(const ConcatenationParams& params,
