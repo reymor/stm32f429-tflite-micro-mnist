@@ -1,5 +1,5 @@
 /*
- * menu_images.h
+ * main.cc
  *
  *  Created on: 14-Nov-2020
  *      Author: reymor
@@ -9,21 +9,16 @@
 
 /* Start of includes */
 #include <stdio.h>
-
-extern "C" {
 #include "main.h"
-}
 #include "debug.h"
 #include "menu_images.h"
 /* End of include */
 
 /* Start of Tiny ML includes */
-#include "tensorflow/lite/micro/micro_error_reporter.h"
+#include "tensorflow/lite/micro/tflite_bridge/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
-#include "tensorflow/lite/micro/all_ops_resolver.h"
 #include "tensorflow/lite/schema/schema_generated.h"
-#include "tensorflow/lite/version.h"
 
 #include <model_int8.h> // Model
 /* End of Tiny ML includes */
@@ -38,7 +33,7 @@ extern "C" {
 #define kNumberOfOutputs 	10U
 
 /* Private global variables */
-static uint8_t _run = 0;
+static uint8_t _run_model = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
@@ -133,7 +128,7 @@ int main(void)
 	const int tensor_arena_size = 30*1024;
 	static uint8_t tensor_arena[tensor_arena_size];
 
-	static tflite::MicroInterpreter static_interpreter(model, micro_op_resolver, tensor_arena, tensor_arena_size, error_reporter);
+	static tflite::MicroInterpreter static_interpreter(model, micro_op_resolver, tensor_arena, tensor_arena_size);
 
 	TfLiteStatus allocate_status = static_interpreter.AllocateTensors();
 	if( allocate_status != kTfLiteOk)
@@ -150,9 +145,9 @@ int main(void)
 	for(;;)
 	{
 		check_touch(); /* check if the touch was touched to draw or select something in the menu */
-		if(_run)
+		if(_run_model)
 		{
-			_run = 0; //clear the flag
+			_run_model = 0; //clear the flag
 			/* save the image from working window  160x160 image */
 			prepare_working_window();
 			/* convert image from rgb to gray */
@@ -201,15 +196,17 @@ static uint8_t get_top_prediction(const int8_t* predictions, uint8_t num_categor
 /* print the results on the screen */
 static void print_result(uint8_t number, uint32_t time)
 {
+	static uint8_t op_buffer[30];
 	static uint32_t color = BSP_LCD_GetTextColor(); // saves the color in the pen
+
 	BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
 	BSP_LCD_FillRect(67, (BSP_LCD_GetYSize()-90), 150, 70); // Clear the result windows if there are something
 	BSP_LCD_SetTextColor(LCD_COLOR_BLACK); //The result will be print with black
-	const uint8_t * templates[2] = {"The number is: %d", "Time: %d ms"};
-	static uint8_t op_buffer[30];
-	snprintf((uint8_t *)op_buffer, 30, (uint8_t *)templates[0], number);
+
+	snprintf((char *)op_buffer, 30, (char *)"The number is: %u", number);
 	BSP_LCD_DisplayStringAt(67, (BSP_LCD_GetYSize()-90),(uint8_t*)op_buffer, LEFT_MODE);
-	snprintf((uint8_t *)op_buffer, 30, (uint8_t *)templates[1], time);
+
+	snprintf((char *)op_buffer, 30, (char *)"Time: %lu ms", time);
 	BSP_LCD_DisplayStringAt(67, (BSP_LCD_GetYSize()-70), (uint8_t *)op_buffer, LEFT_MODE);
 	BSP_LCD_SetTextColor(color); // back the color to the pen
 }
@@ -220,14 +217,13 @@ static void update_tensor_input(TfLiteTensor * in)
 	uint16_t idx;
 	uint8_t * src = (uint8_t*) TRANSFORMED_FRAME_BUFFER;
 	for(idx = 0; idx < in->bytes; idx++)
-		in->data.int8[idx] = (int8_t)(src[idx] - 127); // it is because the input is int8 and the image is in uint8 format
+		in->data.int8[idx] = (int8_t)(src[idx] - 127); // the input is int8 and the image is in uint8 format
 }
 
 static void check_touch(void)
 {
-  static uint32_t x = 0, y = 0;
-  static uint32_t color;
-  static TS_StateTypeDef  TS_State;
+  uint32_t x = 0, y = 0, color;
+  TS_StateTypeDef TS_State;
 
   /* Get Touch screen position */
   BSP_TS_GetState(&TS_State);
@@ -236,37 +232,37 @@ static void check_touch(void)
   x = Calibration_GetX(TS_State.X);
   y = Calibration_GetX(TS_State.Y);
 
-  if ((TS_State.TouchDetected) & ( x > 5 ) & ( x < 55 ))
+  if ((TS_State.TouchDetected) && (x > 5) && (x < 55))
   {
     /* User selects one of the color pens */
-    if ((TS_State.TouchDetected) & ( y > 45 ) & ( y < 85 ))
+    if ((y > 45) && (y < 85))
     {
       BSP_LCD_SetTextColor(LCD_COLOR_RED);
     }
-    else if ((TS_State.TouchDetected) & ( y > 90 ) & ( y < (130) ))
+    else if ((y > 90 ) && (y < (130)))
     {
       BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
     }
-    else if ((TS_State.TouchDetected) & ( y > (135) ) & ( y < (175) ))
+    else if ((y > (135)) && (y < (175)))
     {
       BSP_LCD_SetTextColor(LCD_COLOR_BLUE);
     }
-    else if ((TS_State.TouchDetected) &  ( y > (220) ) & ( y < (270) ))
+    else if ((y > (220)) && (y < (270)))
     {
       /* Clear screen */
       /* Get the current text color */
       color = BSP_LCD_GetTextColor();
       BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
       /* Clear the result window */
-      BSP_LCD_FillRect(67, (BSP_LCD_GetYSize()-90), 150, 70);
+      BSP_LCD_FillRect(67, (BSP_LCD_GetYSize() - 90), 150, 70);
       /* Clear the working window */
       BSP_LCD_FillRect(68, 8, 159, 159);
       BSP_LCD_SetTextColor(color);
     }
-    else if ((TS_State.TouchDetected) &  ( y > (275) ) & ( y < (320) ))
+    else if ((y > (275)) && (y < (320)))
     {
     	BSP_LED_On(LED4);
-    	_run = 1; // flag for running the model
+    	_run_model = 1;
     }
     else
     {
@@ -275,9 +271,10 @@ static void check_touch(void)
     }
     update_color();
   }
-  else if ((TS_State.TouchDetected) & ( x > (67 + CIRCLE_PENCIL)) & ( y > (7 + CIRCLE_PENCIL) ) & ( x < (BSP_LCD_GetXSize()-(7  + CIRCLE_PENCIL )) ) & ( y < (BSP_LCD_GetYSize()-(155 + CIRCLE_PENCIL )) ))
+  else if ((TS_State.TouchDetected) && (x > (67 + CIRCLE_PENCIL)) && (y > (7 + CIRCLE_PENCIL)) &&
+		  (x < (BSP_LCD_GetXSize() - (7  + CIRCLE_PENCIL))) && (y < (BSP_LCD_GetYSize() - (155 + CIRCLE_PENCIL))))
   {
-    BSP_LCD_FillCircle((x), (y), CIRCLE_PENCIL); /*here its where you touched */
+    BSP_LCD_FillCircle(x, y, CIRCLE_PENCIL); /*here its where you touched */
   }
 }
 
@@ -327,7 +324,7 @@ void draw_menu(void)
 /* update the pencil color in the menu */
 static void update_color(void)
 {
-  static uint32_t color;
+  uint32_t color;
 
   /* Clear the current circle */
   color = BSP_LCD_GetTextColor();

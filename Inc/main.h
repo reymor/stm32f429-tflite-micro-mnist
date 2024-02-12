@@ -46,6 +46,10 @@
 #ifndef __MAIN_H
 #define __MAIN_H
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f429i_discovery.h"
 #include "stm32f429i_discovery_lcd.h"
@@ -77,6 +81,9 @@ uint16_t Calibration_GetX(uint16_t x);
 uint16_t Calibration_GetY(uint16_t y);
 uint8_t IsCalibrationDone(void);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __MAIN_H */
 
